@@ -4,6 +4,9 @@ Skill: `remaster-triage`. This page holds the details the skill points to.
 
 ## Reading an exe without running it
 
+With the MCP server (`tools/mcp`), `detect_engine` on the install folder and `read_pe_info` on the
+main exe do all of the below. Without it, by hand:
+
 - **Bitness:** PE header `Machine` field (`0x14c` = 32-bit, `0x8664` = 64-bit).
 - **Renderer API:** the import table and the renderer modules shipped with the game
   (`ddraw.dll`, `d3d8.dll`, `d3d9.dll`, `opengl32.dll`, Glide wrappers). Engines with pluggable

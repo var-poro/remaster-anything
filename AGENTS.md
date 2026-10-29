@@ -21,6 +21,9 @@ next agent starts further ahead.
   and `gh pr list --search "<game>"`.
 - Keep the owner's private state (install paths, logs, captures, extracted assets) in
   `local/`, which git ignores. Reread `local/` at the start of each session.
+- Tools: this repo ships a read-only MCP server (`.mcp.json`, needs `npm install`). It searches
+  the directory, reads exe headers and detects the engine of an install. See
+  [tools/mcp/README.md](tools/mcp/README.md).
 
 ## Ground rules
 

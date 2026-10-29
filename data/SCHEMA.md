@@ -6,6 +6,7 @@ A future `build-directory` script will render `DIRECTORY.md` from it: edit the Y
 
 ```yaml
 - game: Deus Ex                        # display name of the base game
+  slug: deus-ex                        # folder name in games/; same slug for every entry of a game
   year: 2000
   engine: Unreal Engine 1              # see playbook/engine-families.md
   project: Example Widescreen Fix      # project name
@@ -37,6 +38,8 @@ A future `build-directory` script will render `DIRECTORY.md` from it: edit the Y
 ## Rules
 
 - Don't guess. Unknown is `unknown`.
+- `slug` is lowercase letters, digits and hyphens (`deus-ex`, `system-shock-2`). It matches
+  the game's folder in `games/` and never changes once used.
 - Every entry needs at least one source and a `checked` date.
 - Gaps use `kind: gap`, `project: "(none found)"`, `status: none`, an empty `url`, and a
   `searched:` field listing where and when you looked.

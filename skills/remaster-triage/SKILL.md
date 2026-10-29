@@ -9,6 +9,10 @@ Goal: know exactly what you're working on and what the owner wants, before touch
 
 ## 1. Identity record
 
+If the `remaster-anything` MCP server is available, start with `detect_engine` on the install
+folder, then `read_pe_info` on the main exe it lists first. Treat their output as evidence to
+record, not as the answer: candidates with `verified: false` must be confirmed.
+
 Write it to `games/<game-slug>/NOTES.md` (identity table at the top) and `local/identity.md`:
 
 - Game, release year, store (Steam, GOG, disc, other), store version or build id.
@@ -23,7 +27,7 @@ If anything is uncertain, write `unknown` and how you'd find out.
 
 ## 2. Prior work
 
-- Search `data/directory.yaml` and `games/` for the game.
+- Search `data/directory.yaml` and `games/` for the game (MCP: `search_directory`, `get_game`).
 - If an existing recipe matches the identity record (same store and exe hash), follow it
   instead of starting over. If it doesn't match, note the difference and continue.
 - If an official remaster exists, tell the owner. It doesn't stop the project, but it changes

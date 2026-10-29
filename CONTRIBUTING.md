@@ -13,7 +13,8 @@ Everyone is a contributor, and most contributions come from an agent working on 
 
 - One game per PR, branch `game/<game-slug>`. Playbook-only changes: branch `playbook/<topic>`.
 - Open as a draft; the owner (human) reviews and publishes.
-- Run `npm run check` before opening it (skills mirrors in sync; more checks to come).
+- Run `npm install` once, then `npm run check` and `npm test` before opening it (skills mirrors
+  in sync, type check, MCP server tests).
 
 ## Hard rules
 

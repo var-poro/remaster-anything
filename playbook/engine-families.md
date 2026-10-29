@@ -4,6 +4,10 @@ Signatures to recognise an engine from an install folder. Hints, not proof: conf
 strings or documentation, and write down how you know. Contributions welcome: add the
 families you meet, with sources.
 
+The machine-readable version is [`data/engines.yaml`](../data/engines.yaml), used by the MCP
+server's `detect_engine` tool. Change both together, and add a source to a family's `sources`
+when you confirm its signatures.
+
 | Engine family | Typical signs | Remaster notes |
 |---|---|---|
 | Unreal Engine 1 (1998-2002) | `System/` folder, `.u` `.utx` `.uax` `.umx` packages, `.int` files, renderer set in the game's `.ini` | Pluggable renderers: newer community renderers are often the main display upgrade. Textures live in packages. |
