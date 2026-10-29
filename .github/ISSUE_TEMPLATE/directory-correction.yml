@@ -1,0 +1,27 @@
+name: Directory correction
+description: An entry in data/directory.yaml is wrong, outdated or missing.
+title: "[directory] "
+labels: [directory]
+body:
+  - type: input
+    id: entry
+    attributes:
+      label: Entry
+      description: Game and project name, or "new" for a missing entry.
+      placeholder: Deus Ex / Example Widescreen Fix
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong
+      description: Field and current value, and what it should be.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources
+      description: Links that back the correction. Entries without sources can't be changed.
+    validations:
+      required: true

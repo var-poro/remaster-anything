@@ -2,7 +2,9 @@
 
 **Any old PC game. Sharper, wider, smoother. Faithful to the original. Your agent does the work.**
 
-> Status: pre-release. Pilot game: **Deus Ex (2000)**. v1 covers two axes: **display & comfort** and **textures**.
+> **Status: early work in progress, not ready to use yet.** No game has been remastered with it so far
+> and the directory is empty. Pilot game: **Deus Ex (2000)**. v1 covers two axes: **display & comfort**
+> and **textures**. Follow [ROADMAP.md](ROADMAP.md) for progress.
 
 Want to replay an old game on a modern PC without it looking stretched, blurry or broken?
 Point your AI coding agent at this repo. It identifies the game and its engine, finds every

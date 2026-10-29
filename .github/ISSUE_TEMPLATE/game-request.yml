@@ -1,0 +1,44 @@
+name: Game request
+description: Suggest a game to remaster, or say you're working on one.
+title: "[game] "
+labels: [game]
+body:
+  - type: input
+    id: game
+    attributes:
+      label: Game
+      description: Name and release year.
+      placeholder: Deus Ex (2000)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Store and version
+      description: Where you own it and which version, if you know.
+      placeholder: GOG, 1.112fm
+  - type: input
+    id: engine
+    attributes:
+      label: Engine
+      description: Leave "unknown" if you're not sure.
+      placeholder: unknown
+  - type: checkboxes
+    id: axes
+    attributes:
+      label: What should improve?
+      options:
+        - label: Display & comfort (widescreen, FOV, HUD, frame rate, controller)
+        - label: Textures (faithful upscaling)
+  - type: textarea
+    id: existing
+    attributes:
+      label: Existing work you know of
+      description: Fixes, packs, renderers, ports, with links.
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Rules
+      options:
+        - label: Single-player only, and I own the game. I won't attach game files or assets.
+          required: true

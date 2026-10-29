@@ -1,9 +1,11 @@
 # Roadmap
 
-Public release only after phase 3 is done and the directory has at least 10 entries.
+The repo is public while it is being built. The launch (announcements, listings, Discord, phase 5)
+waits until phase 3 is done and the directory has at least 10 entries.
 
 ## Phase 0: framing
-- [ ] Reserve the GitHub repo name and a domain
+- [x] Reserve the GitHub repo name (`var-poro/remaster-anything`)
+- [ ] Reserve a domain
 - [ ] Study Co-op Anything's structure in depth (reference model)
 - [ ] Finalise rules: license, no assets, recipes only, credits
 
