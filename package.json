@@ -7,9 +7,10 @@
   "type": "module",
   "workspaces": ["tools/*"],
   "scripts": {
+    "prepare": "node scripts/check-sensitive.mjs --install-hook",
     "sync-skills": "node scripts/sync-skills.mjs",
-    "check": "node scripts/sync-skills.mjs --check && npm run --workspaces --if-present check",
-    "test": "npm run --workspaces --if-present test"
+    "check": "node scripts/sync-skills.mjs --check && node scripts/check-sensitive.mjs && npm run --workspaces --if-present check",
+    "test": "node --test scripts/*.test.mjs && npm run --workspaces --if-present test"
   },
   "engines": { "node": ">=22.18" }
 }

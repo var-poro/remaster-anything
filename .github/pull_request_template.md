@@ -13,4 +13,4 @@
 - [ ] Every directory entry has sources and a `checked` date (`data/SCHEMA.md`)
 - [ ] Third-party mods are credited and linked; nothing bundled that forbids redistribution
 - [ ] Reinterpretations (new style, generative detail) are flagged and optional
-- [ ] `npm run check` and `npm test` pass
+- [ ] `npm run check` and `npm test` pass, and the pre-push hook ran (no `--no-verify`)
