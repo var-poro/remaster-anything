@@ -9,6 +9,12 @@ Everyone is a contributor, and most contributions come from an agent working on 
 - A playbook fix: something that was wrong, missing or slowed you down.
 - A failed attempt, written up honestly. It saves the next person days.
 
+## Issues
+
+Use the templates: **Game request** to suggest a game or announce work on one, **Directory
+correction** for a wrong or missing entry (with sources). Security problems go through
+[SECURITY.md](SECURITY.md), not issues.
+
 ## Pull requests
 
 - One game per PR, branch `game/<game-slug>`. Playbook-only changes: branch `playbook/<topic>`.
