@@ -5,9 +5,11 @@
   "description": "Point your AI agent at any old PC game and remaster it, faithfully.",
   "license": "MIT",
   "type": "module",
+  "workspaces": ["tools/*"],
   "scripts": {
     "sync-skills": "node scripts/sync-skills.mjs",
-    "check": "node scripts/sync-skills.mjs --check"
+    "check": "node scripts/sync-skills.mjs --check && npm run --workspaces --if-present check",
+    "test": "npm run --workspaces --if-present test"
   },
-  "engines": { "node": ">=20" }
+  "engines": { "node": ">=22.18" }
 }

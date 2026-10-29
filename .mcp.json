@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "remaster-anything": {
+      "command": "node",
+      "args": ["tools/mcp/src/index.ts"]
+    }
+  }
+}

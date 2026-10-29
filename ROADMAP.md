@@ -15,7 +15,9 @@ Public release only after phase 3 is done and the directory has at least 10 entr
 - [ ] Review every skill on a real run (phase 3)
 
 ## Phase 2: tools (TypeScript, `npx`-installable)
-- [ ] MCP server: search directory, detect engine and renderer, detect asset formats, validate entries and recipes, read playbook
+- [x] MCP server, first tools: search directory, get game, read exe headers, detect engine and renderer
+- [ ] MCP server, next tools: detect asset formats, validate entries and recipes, read playbook
+- [ ] Verify the engine signatures in `data/engines.yaml` against sources and real installs
 - [ ] Capture tool: same viewpoints before/after (saves, console, demos)
 - [ ] Fidelity check: downscale-and-compare, palette drift
 - [ ] Performance check: frame time capture and comparison

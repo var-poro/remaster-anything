@@ -1,0 +1,219 @@
+# Engine signatures, read by the MCP server's detect_engine tool.
+# Human-readable version: playbook/engine-families.md. Change both together.
+#
+# Signals (names are case-insensitive, matched anywhere within the scan depth):
+#   dir:   a folder with this name ("*" matches any run of characters)
+#   file:  a file with this name ("*" allowed)
+#   ext:   files with one of these extensions
+#   magic: files with one of these extensions whose first bytes, at `offset`, equal `hex`.
+#          Optional `u16le` range: the little-endian uint16 at `u16le.offset` must fall in
+#          [min, max] (used for package format versions). Only file headers are read.
+# strength: strong = rarely seen outside this family; weak = common or shared.
+# Confidence: high = a strong signal plus at least one other; medium = one strong signal, or
+# two weak ones; low = a single weak signal.
+#
+# sources: where the signatures were checked. Empty = written from memory, NOT verified:
+# detect_engine reports `verified: false` and agents must confirm before relying on it.
+
+families:
+  - id: unreal-1
+    name: Unreal Engine 1
+    years: 1998-2002
+    signals:
+      - { dir: System, strength: weak }
+      - { ext: [.u, .utx, .uax, .umx, .unr], strength: weak }
+      - { ext: [.int], strength: weak }
+      - magic: { ext: [.u, .utx, .uax, .umx, .unr], hex: "c1832a9e", offset: 0, u16le: { offset: 4, min: 0, max: 99 } }
+        strength: strong
+        note: Unreal package tag 0x9E2A83C1, package version below 100 (range approximate)
+    renderer_config:
+      files: ["*.ini"]
+      section: Engine.Engine
+      keys: [GameRenderDevice, RenderDevice]
+    sources: []
+
+  - id: unreal-2
+    name: Unreal Engine 2 / 2.5
+    years: 2002-2008
+    signals:
+      - { dir: System, strength: weak }
+      - { ext: [.usx, .ukx, .upx], strength: strong }
+      - magic: { ext: [.u, .utx, .usx, .ukx, .uax, .ut2, .unr], hex: "c1832a9e", offset: 0, u16le: { offset: 4, min: 100, max: 299 } }
+        strength: strong
+        note: Unreal package tag, package version 100-299 (range approximate)
+    renderer_config:
+      files: ["*.ini"]
+      section: Engine.Engine
+      keys: [RenderDevice, GameRenderDevice]
+    sources: []
+
+  - id: unreal-3
+    name: Unreal Engine 3
+    years: 2006-2014
+    signals:
+      - { dir: "CookedPC*", strength: strong, note: "CookedPC, CookedPCConsole, CookedPCConsole_FR..." }
+      - { ext: [.upk, .xxx], strength: weak }
+      - magic: { ext: [.upk, .u, .umap, .xxx], hex: "c1832a9e", offset: 0, u16le: { offset: 4, min: 300, max: 999 } }
+        strength: strong
+        note: Unreal package tag, package version 300 and above (range approximate)
+    sources: []
+
+  - id: goldsrc
+    name: GoldSrc
+    years: 1998-2008
+    signals:
+      - { dir: valve, strength: weak }
+      - { ext: [.wad], strength: weak }
+      - magic: { ext: [.wad], hex: "57414433", offset: 0 }
+        strength: strong
+        note: WAD3 texture archive
+      - magic: { ext: [.bsp], hex: "1e000000", offset: 0 }
+        strength: strong
+        note: BSP version 30
+    sources: []
+
+  - id: source
+    name: Source
+    years: 2004-2020
+    signals:
+      - { file: gameinfo.txt, strength: strong }
+      - { ext: [.vpk], strength: weak }
+      - magic: { ext: [.vpk], hex: "3412aa55", offset: 0 }
+        strength: strong
+        note: VPK signature 0x55AA1234
+      - { ext: [.vtf], strength: weak }
+    sources: []
+
+  - id: idtech-2
+    name: id Tech 2 (Quake II era)
+    years: 1997-2001
+    signals:
+      - magic: { ext: [.pak], hex: "5041434b", offset: 0 }
+        strength: strong
+        note: PACK archive (also used by Quake 1 and a few non-id engines)
+      - magic: { ext: [.bsp], hex: "49425350", offset: 0, u16le: { offset: 4, min: 38, max: 38 } }
+        strength: strong
+        note: IBSP version 38
+      - { ext: [.wal], strength: weak }
+    sources: []
+
+  - id: idtech-3
+    name: id Tech 3
+    years: 1999-2010
+    signals:
+      - { ext: [.pk3], strength: strong }
+      - magic: { ext: [.pk3], hex: "504b0304", offset: 0 }
+        strength: weak
+        note: zip archive (any zip matches)
+      - { ext: [.shader], strength: weak }
+    sources: []
+
+  - id: gamebryo
+    name: Gamebryo / NetImmerse
+    years: 1997-2014
+    signals:
+      - { ext: [.nif], strength: weak }
+      - magic: { ext: [.nif], hex: "47616d656272796f", offset: 0 }
+        strength: strong
+        note: '"Gamebryo File Format" header'
+      - magic: { ext: [.nif], hex: "4e6574496d6d65727365", offset: 0 }
+        strength: strong
+        note: '"NetImmerse File Format" header'
+      - magic: { ext: [.bsa], hex: "42534100", offset: 0 }
+        strength: strong
+        note: BSA archive (Bethesda, Oblivion and later)
+      - { ext: [.esm, .esp], strength: strong }
+    sources: []
+
+  - id: renderware
+    name: RenderWare
+    years: 2000-2008
+    signals:
+      - magic: { ext: [.txd], hex: "16000000", offset: 0 }
+        strength: weak
+        note: RenderWare texture dictionary chunk id
+      - magic: { ext: [.dff], hex: "10000000", offset: 0 }
+        strength: weak
+        note: RenderWare clump chunk id
+      - { ext: [.img], strength: weak }
+    sources: []
+
+  - id: iw
+    name: IW engine (Call of Duty)
+    years: 2003-2013
+    signals:
+      - magic: { ext: [.ff], hex: "49576666", offset: 0 }
+        strength: strong
+        note: IWff fastfile
+      - { ext: [.iwd], strength: strong }
+    sources: []
+
+  - id: infinity
+    name: Infinity Engine (BioWare)
+    years: 1998-2002
+    signals:
+      - { file: chitin.key, strength: weak }
+      - magic: { ext: [.bif], hex: "4249464656312020", offset: 0 }
+        strength: weak
+        note: BIFF V1 archive (shared with Odyssey)
+      - { ext: [.tis, .bam, .wed], strength: strong }
+    sources: []
+
+  - id: odyssey
+    name: Odyssey Engine (BioWare)
+    years: 2003-2005
+    signals:
+      - { file: chitin.key, strength: weak }
+      - { ext: [.tpc], strength: strong }
+      - { ext: [.rim, .erf], strength: weak }
+    sources: []
+
+  - id: unity
+    name: Unity
+    years: 2005-
+    signals:
+      - { file: UnityPlayer.dll, strength: strong }
+      - { file: globalgamemanagers, strength: strong }
+      - { file: mainData, strength: strong }
+      - { dir: "*_Data", strength: weak }
+    sources: []
+
+  - id: unreal-4-5
+    name: Unreal Engine 4 / 5
+    years: 2014-
+    signals:
+      - { ext: [.utoc, .ucas], strength: strong }
+      - { ext: [.pak], strength: weak }
+      - { dir: Binaries, strength: weak }
+      - { dir: Engine, strength: weak }
+    sources: []
+
+# DLLs that tell which graphics path a game uses when they sit in the install folder.
+#   system: a Windows system DLL name. Inside a game folder it is a wrapper (dgVoodoo,
+#           d3d8to9, DXVK...) or a bundled runtime, never the system copy.
+#   proxy:  a DLL name mod loaders hijack (ASI loaders, injectors). Often means a fix is installed.
+#   engine: a renderer module of the engine itself (pluggable renderers).
+renderer_modules:
+  - { file: ddraw.dll, kind: system, api: DirectDraw }
+  - { file: d3d8.dll, kind: system, api: Direct3D 8 }
+  - { file: d3d9.dll, kind: system, api: Direct3D 9 }
+  - { file: d3d10.dll, kind: system, api: Direct3D 10 }
+  - { file: d3d11.dll, kind: system, api: Direct3D 11 }
+  - { file: dxgi.dll, kind: system, api: DXGI }
+  - { file: opengl32.dll, kind: system, api: OpenGL }
+  - { file: glide.dll, kind: system, api: Glide }
+  - { file: glide2x.dll, kind: system, api: Glide 2 }
+  - { file: glide3x.dll, kind: system, api: Glide 3 }
+  - { file: dinput8.dll, kind: proxy, api: none }
+  - { file: dinput.dll, kind: proxy, api: none }
+  - { file: dsound.dll, kind: proxy, api: none }
+  - { file: winmm.dll, kind: proxy, api: none }
+  - { file: version.dll, kind: proxy, api: none }
+  - { file: D3DDrv.dll, kind: engine, api: Direct3D (version unknown) }
+  - { file: D3D9Drv.dll, kind: engine, api: Direct3D 9 }
+  - { file: D3D10Drv.dll, kind: engine, api: Direct3D 10 }
+  - { file: D3D11Drv.dll, kind: engine, api: Direct3D 11 }
+  - { file: OpenGLDrv.dll, kind: engine, api: OpenGL }
+  - { file: GlideDrv.dll, kind: engine, api: Glide }
+  - { file: SoftDrv.dll, kind: engine, api: software }
+  - { file: MeTaLDrv.dll, kind: engine, api: S3 MeTaL }
