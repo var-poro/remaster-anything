@@ -1,0 +1,13 @@
+{
+  "name": "remaster-anything",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Point your AI agent at any old PC game and remaster it, faithfully.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "sync-skills": "node scripts/sync-skills.mjs",
+    "check": "node scripts/sync-skills.mjs --check"
+  },
+  "engines": { "node": ">=20" }
+}

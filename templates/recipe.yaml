@@ -1,0 +1,49 @@
+# Remaster recipe. Replays a remaster on the player's own copy.
+# Never contains game files or generated assets.
+recipe: 1                       # format version
+game: <Game name>
+slug: <game-slug>
+applies_to:                     # refuse to run on anything else
+  store: <steam|gog|disc|other>
+  version: <store version or build>
+  exe: <main exe file name>
+  exe_sha256: <sha256>
+axes: [display, textures]
+fidelity: faithful              # faithful | mixed (then list optional steps below)
+qa: none                        # see playbook/qa.md
+
+downloads:
+  - id: <short-id>
+    name: <project name>
+    url: <official URL>
+    version: <version>
+    sha256: <sha256 of the downloaded file>
+    license: <license or unknown>
+    redistribution: <allowed|forbidden|unknown>
+
+steps:                          # executed in order, on a copy of the install
+  - do: copy-install
+    to: <test dir>
+  - do: install
+    download: <short-id>
+    files: [<what goes where>]
+  - do: config
+    file: <relative path>
+    set: { <section/key>: <value> }
+  - do: generate-textures
+    tool: <tool and version>
+    model: <model name and version>
+    scale: 2
+    classes: [diffuse, ui]
+  - do: verify
+    checks: [display, textures]
+
+optional:                       # reinterpretations or heavier changes, off by default
+  []
+
+rollback:
+  - do: restore-install
+    from: <backup dir>
+
+known_issues: []
+credits: []

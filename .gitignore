@@ -1,0 +1,7 @@
+# Owner's private state: install paths, logs, captures, extracted assets
+local/
+captures/
+extracted/
+node_modules/
+dist/
+*.log
