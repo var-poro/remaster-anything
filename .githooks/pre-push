@@ -1,0 +1,4 @@
+#!/bin/sh
+# Blocks the push if the commits being pushed contain anything sensitive (scripts/check-sensitive.mjs).
+# Enabled by `npm install`, which sets core.hooksPath to .githooks.
+exec node scripts/check-sensitive.mjs --pre-push

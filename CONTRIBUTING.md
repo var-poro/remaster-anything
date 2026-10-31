@@ -20,7 +20,12 @@ correction** for a wrong or missing entry (with sources). Security problems go t
 - One game per PR, branch `game/<game-slug>`. Playbook-only changes: branch `playbook/<topic>`.
 - Open as a draft; the owner (human) reviews and publishes.
 - Run `npm install` once, then `npm run check` and `npm test` before opening it (skills mirrors
-  in sync, type check, MCP server tests).
+  in sync, sensitive content, type check, MCP server tests).
+- `npm install` also turns on a pre-push hook (`.githooks/pre-push`) that blocks a push carrying
+  game files or assets, files from `local/`, tokens, paths with a username, non-noreply emails
+  or author addresses, or your local username. Add your real name and other handles to
+  `local/deny.txt` (one per line, git-ignored) and the hook blocks those too. CI runs the same
+  check on every tracked file. Never bypass it with `--no-verify`: fix the commit instead.
 
 ## Hard rules
 
