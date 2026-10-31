@@ -28,7 +28,7 @@ describe("detect_engine", () => {
   it("recognises an Unreal Engine 1 install, its renderers and its config", async () => {
     const result = await detect(fakeUnreal1Install());
     const top = result.candidates[0]!;
-    expect(top).toMatchObject({ id: "unreal-1", confidence: "high", verified: false });
+    expect(top).toMatchObject({ id: "unreal-1", confidence: "high", verified: true });
     expect(top.evidence.find((e) => e.signal.startsWith("magic"))).toMatchObject({ strength: "strong", count: 4 });
     expect(result.candidates.find((c) => c.id === "unreal-2")?.confidence ?? "none").not.toBe("high");
     expect(result.renderer.modules).toEqual([
@@ -39,6 +39,7 @@ describe("detect_engine", () => {
       { file: "System/DeusEx.ini", section: "Engine.Engine", key: "GameRenderDevice", value: "D3DDrv.D3DRenderDevice" },
     ]);
     expect(result.executables).toEqual(["System/DeusEx.exe"]);
+    // unreal-2 (low, from the System folder) is still unverified.
     expect(result.notes.join()).toMatch(/not verified/);
   });
 
@@ -64,6 +65,23 @@ describe("detect_engine", () => {
     expect(result.executables).toEqual(["Binaries/Win32/Game.exe", "Launcher.exe", "unins000.exe", "Binaries/Prerequisites/vcredist_x86.exe"]);
     expect(result.renderer.modules).toHaveLength(1);
     expect(result.notes.join()).not.toMatch(/wrapper/);
+  });
+
+  it("ranks editors and bundled installers after the game, as on the Unreal Gold disc", async () => {
+    const root = writeTree(tempDir(), {
+      "System/gamespyinstaller220std.exe": Buffer.alloc(9000),
+      "System/UnrealEd.exe": Buffer.alloc(5000),
+      "System/UCC.exe": Buffer.alloc(100),
+      "System/Unreal.exe": Buffer.alloc(1000),
+      "System/Setup.exe": Buffer.alloc(50),
+    });
+    expect((await detect(root)).executables).toEqual([
+      "System/Unreal.exe",
+      "System/UnrealEd.exe",
+      "System/UCC.exe",
+      "System/gamespyinstaller220std.exe",
+      "System/Setup.exe",
+    ]);
   });
 
   it("recognises Unity and flags wrappers and proxy DLLs", async () => {
