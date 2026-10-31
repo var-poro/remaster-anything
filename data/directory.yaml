@@ -1,3 +1,427 @@
 # Remaster Anything directory. Schema: data/SCHEMA.md
-# Empty on purpose: entries are added by research runs, with sources.
-[]
+# Entries are added by research runs, with sources.
+
+# --- Deus Ex (2000) -----------------------------------------------------------------------
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Deus Exe (Kentie's launcher)
+  url: https://kentie.net/article/dxguide/
+  kind: launcher
+  status: playable
+  axes: { display: yes, textures: no, rendering: no, audio: partial, port: no }
+  fidelity: faithful
+  game_versions: [GOTY 1.112fm (Steam, GOG)]
+  requires: []
+  conflicts_with: []
+  open_source: partial
+  redistribution: unknown
+  last_activity: unknown
+  qa: community-reports
+  notes: >-
+    Replacement DeusEx.exe, v8.1 (release date not given; the page was last edited 2016-02).
+    Sets FOV, borderless window, GUI scaling, frame limit, raw input; fixes the 2 TB
+    "low disk space" save bug and audio stutter (PCGamingWiki). Needs the VC++ 2015 x86
+    runtime and Windows Vista or later (5.3 for XP). Moves settings and saves to
+    %USERPROFILE%\Documents\Deus Ex. Known issues: its frame limiter can freeze menus,
+    AutoFOV crashes when the window is minimized, does not work with the Direct2Drive or
+    Impulse releases. Source is published (needs the game headers), no license stated.
+    The Community Update calls it "no longer developed or supported" and defaults to Launch.
+  sources:
+    - https://kentie.net/article/dxguide/
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+    - https://github.com/Defaultplayer001/Deus-Ex-Universe-Community-Update-/tree/master/%5B1.0%5D%20Deus%20Ex%20-%20Windows-Linux-macOS-Android
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Launch (Hanfling's launcher)
+  url: http://coding.hanfling.de/launch/
+  kind: launcher
+  status: playable
+  axes: { display: partial, textures: no, rendering: no, audio: no, port: no }
+  fidelity: faithful
+  game_versions: [GOTY 1.112fm]
+  requires: []
+  conflicts_with: []
+  open_source: unknown
+  redistribution: unknown
+  last_activity: 2019-06
+  qa: community-reports
+  notes: >-
+    Replacement launcher (Launch-DeusEx-1112f-20190603.zip). Fixes the game running at a
+    non-constant speed, disables DEP, adds resolution and audio device dialogs, ships LCC
+    (a UCC replacement). No FOV, widescreen or HUD options on its page. Default launcher of
+    the Community Update ("more compatible / stable, still developed & supported").
+  sources:
+    - http://coding.hanfling.de/launch/
+    - https://github.com/Defaultplayer001/Deus-Ex-Universe-Community-Update-/tree/master/%5B1.0%5D%20Deus%20Ex%20-%20Windows-Linux-macOS-Android
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Direct3D 10 renderer (Kentie)
+  url: https://kentie.net/article/d3d10drv/
+  kind: renderer
+  status: playable
+  axes: { display: partial, textures: partial, rendering: yes, audio: no, port: no }
+  fidelity: mixed
+  game_versions: [GOTY 1.112fm (Steam)]
+  requires: []
+  conflicts_with: []
+  open_source: partial
+  redistribution: unknown
+  last_activity: unknown
+  qa: community-reports
+  notes: >-
+    v29 (release date not given). Anti-aliasing, anisotropic filtering, frame limit (default
+    100), automatic FOV, HDR and bloom, optional bump and parallax mapping. ClassicLighting
+    (default true) matches the original renderers' look; HDR, bloom and parallax change it.
+    Its texture hotloading is the override path New Vision 2.0a relies on. Known issues:
+    black screen on Alt+Tab in fullscreen (enable Precache), stutter with NVIDIA drivers 442+
+    (disable its limiter, cap at 120 FPS in the driver), Print Screen does not work.
+    Source is published, no license stated.
+  sources:
+    - https://kentie.net/article/d3d10drv/
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Enhanced OpenGL and Direct3D 9 renderers (Chris Dohnal)
+  url: https://www.cwdohnal.com/utglr/
+  kind: renderer
+  status: playable
+  axes: { display: unknown, textures: partial, rendering: yes, audio: no, port: no }
+  fidelity: faithful
+  game_versions: [GOTY 1.112fm]
+  requires: []
+  conflicts_with: []
+  open_source: partial
+  redistribution: unknown
+  last_activity: 2010-08
+  qa: community-reports
+  notes: >-
+    OpenGL 2.1 for Deus Ex (2010-08) and Direct3D 9 1.3 (2010-03). Bug fixes and
+    compatibility without added effects; S3TC support needed by New Vision 1.5. No extra
+    dependencies; reported to work better under Wine and DXVK. The OpenGL build overwrites
+    OpenGLDrv.dll (back it up). The Community Update ships a newer OpenGL renderer by
+    Hanfling. D3D9 source published, no license stated.
+  sources:
+    - https://www.cwdohnal.com/utglr/
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Unreal DirectX 11 renderer (darknovismc)
+  url: https://www.moddb.com/mods/unreal-directx11-renderer-for-ut-ug-rune-and-dx
+  other_urls:
+    - https://community.pcgamingwiki.com/files/file/2744-unreal-directx11-renderer/
+  kind: renderer
+  status: playable
+  axes: { display: unknown, textures: no, rendering: yes, audio: no, port: no }
+  fidelity: reinterpretation
+  game_versions: [GOTY 1.112fm]
+  requires: []
+  conflicts_with: []
+  open_source: unknown
+  redistribution: unknown
+  last_activity: unknown
+  qa: community-reports
+  notes: >-
+    Fork of Kentie's D3D10 renderer adding ambient occlusion, screen-space reflections,
+    parallax occlusion, tessellation and stronger HDR: these change the look. Newer builds
+    were removed from ModDB and PCGamingWiki says the latest drops Deus Ex support, use
+    v1.6.1. Draws a PayPal watermark that must be turned off; visual bug with the level 4
+    targeting augmentation.
+  sources:
+    - https://www.moddb.com/mods/unreal-directx11-renderer-for-ut-ug-rune-and-dx
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: DECoR (Deus Ex Complementary Renderer)
+  url: https://www.nexusmods.com/deusex/mods/84
+  kind: renderer
+  status: alpha
+  axes: { display: unknown, textures: no, rendering: yes, audio: no, port: no }
+  fidelity: reinterpretation
+  game_versions: [unknown]
+  requires: []
+  conflicts_with: []
+  open_source: unknown
+  redistribution: unknown
+  last_activity: 2026-01
+  qa: none
+  notes: >-
+    Direct3D 11 renderer by rePts, v0.3.0. Per-pixel physically based lighting for static
+    geometry instead of lightmaps, HDR, new water: a different look by design. Recommends
+    Kentie's launcher.
+  sources:
+    - https://www.nexusmods.com/deusex/mods/84
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Echelon Renderer (for RTX Remix)
+  url: https://github.com/onnoj/DeusExEchelonRenderer
+  kind: renderer
+  status: alpha
+  axes: { display: no, textures: unknown, rendering: yes, audio: no, port: no }
+  fidelity: reinterpretation
+  game_versions: [unknown]
+  requires: [Deus Exe (Kentie's launcher)]
+  conflicts_with: []
+  open_source: yes
+  redistribution: allowed
+  last_activity: 2025-03
+  qa: none
+  notes: >-
+    MIT. Fixed-function renderer that feeds NVIDIA RTX Remix stable level geometry and the
+    maps' real lights (path tracing, DLSS). The author calls it "a piece of tech, and not a
+    mod". Animated and object meshes cannot be replaced; level texture replacement through
+    Remix is not documented yet. Turn off Deus Exe's raw input to use the Remix menu.
+  sources:
+    - https://github.com/onnoj/DeusExEchelonRenderer
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Deus Ex Community Update
+  url: https://github.com/Defaultplayer001/Deus-Ex-Universe-Community-Update-
+  other_urls:
+    - https://www.moddb.com/mods/deus-ex-community-update
+  kind: fix
+  status: playable
+  axes: { display: partial, textures: no, rendering: partial, audio: partial, port: no }
+  fidelity: faithful
+  game_versions: [GOTY 1.112fm (disc, Steam, GOG)]
+  requires: []
+  conflicts_with: []
+  open_source: partial
+  redistribution: unknown
+  last_activity: 2024-11
+  qa: community-reports
+  notes: >-
+    v3.4.1. Installer bundling engine fixes, launchers (Launch by default, Deus Exe, UE1
+    Launcher), renderers (Direct3D 10 with Veronika's HDR fix, Direct3D 9, Direct3D 8,
+    Hanfling's OpenGL, nGlide), OpenAL audio, OTP UI Fix (applied by hand), maps patch,
+    translations and editing tools. Transcended and Confix are selected by default; without
+    them the gameplay code is vanilla. Known issue: Transcended recolours some furniture.
+    Install on a fresh copy: many mods overwrite the same core files.
+  sources:
+    - https://github.com/Defaultplayer001/Deus-Ex-Universe-Community-Update-/tree/master/%5B1.0%5D%20Deus%20Ex%20-%20Windows-Linux-macOS-Android
+    - https://github.com/Defaultplayer001/Deus-Ex-Universe-Community-Update-/releases
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: "Deus Ex: Transcended"
+  url: https://www.moddb.com/mods/deus-ex-transcended
+  kind: fix
+  status: playable
+  axes: { display: partial, textures: no, rendering: no, audio: no, port: no }
+  fidelity: faithful
+  game_versions: [GOTY 1.112fm]
+  requires: []
+  conflicts_with: []
+  open_source: unknown
+  redistribution: unknown
+  last_activity: 2020-11
+  qa: community-reports
+  notes: >-
+    Large bug-fix mod "focused solely around faithfulness to the original": no asset
+    changes, most non-fix changes configurable. Fixes weapon viewmodels on wide aspect
+    ratios (PCGamingWiki). Also changes AI and augmentation behaviour (see its changelog)
+    and makes vanilla saves incompatible. Bundled by the Community Update.
+  sources:
+    - https://www.moddb.com/mods/deus-ex-transcended
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: New Vision 1.5
+  url: https://www.moddb.com/mods/new-vision
+  kind: texture-pack
+  status: playable
+  axes: { display: no, textures: yes, rendering: no, audio: no, port: no }
+  fidelity: reinterpretation
+  game_versions: [GOTY 1.112fm]
+  requires: []
+  conflicts_with: []
+  open_source: partial
+  redistribution: allowed
+  last_activity: 2012-11
+  qa: community-reports
+  notes: >-
+    By Dave Watts and others. Replaces about 80% of 2000+ environment textures with
+    hand-made, upscaled versions "with a distinct grungy visual look": a deliberate change
+    of style. Needs an S3TC-capable renderer (OpenGL, Direct3D 9 or 10) with S3TC=True.
+    The author allows reuse in Deus Ex mods with credit. An SDK for compiling
+    high-resolution textures is published. Included in GMDX and Revision.
+  sources:
+    - https://www.moddb.com/mods/new-vision
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: New Vision 2.0a (AI upscale test)
+  url: https://www.moddb.com/downloads/newvision2a
+  kind: texture-pack
+  status: alpha
+  axes: { display: no, textures: yes, rendering: no, audio: no, port: no }
+  fidelity: faithful
+  game_versions: [GOTY 1.112fm]
+  requires: [Direct3D 10 renderer (Kentie)]
+  conflicts_with: []
+  open_source: unknown
+  redistribution: allowed
+  last_activity: 2019-02
+  qa: community-reports
+  notes: >-
+    AI upscale (Topaz Gigapixel) of world, character and item textures, described by its
+    author as closer to the original art style than 1.5, but "a weekend project" from 2019
+    and "far from ideal"; "better results can be achieved with more recent models". Works
+    only through the Direct3D 10 renderer's texture hotloading, not as S3TC packages.
+    Fidelity is the author's claim; not checked here. Users report stutter.
+  sources:
+    - https://www.moddb.com/mods/new-vision
+    - https://www.moddb.com/downloads/newvision2a
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Project HDTP
+  url: https://www.moddb.com/mods/project-hdtp
+  kind: model-pack
+  status: partial
+  axes: { display: no, textures: yes, rendering: no, audio: no, port: no }
+  fidelity: reinterpretation
+  game_versions: [GOTY 1.112fm]
+  requires: []
+  conflicts_with: []
+  open_source: unknown
+  redistribution: unknown
+  last_activity: 2015-10
+  qa: community-reports
+  notes: >-
+    New models and 256 px skins for characters, objects and weapons, newly animated, with
+    characters "darker and more moody": new art, not an upscale. Latest is Beta Release #3
+    (2015-10); coverage is incomplete. Complements New Vision (environments).
+  sources:
+    - https://www.moddb.com/mods/project-hdtp
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Helios Texture Overhaul
+  url: https://www.moddb.com/mods/helios-texture-overhaul
+  kind: texture-pack
+  status: playable
+  axes: { display: no, textures: yes, rendering: no, audio: no, port: no }
+  fidelity: unknown
+  game_versions: [unknown]
+  requires: []
+  conflicts_with: []
+  open_source: unknown
+  redistribution: unknown
+  last_activity: 2021-07
+  qa: none
+  notes: >-
+    v2.0. Characters, decorations and items, with add-ons for GMDX and Revision and an
+    optional outfit changer (40 alternative outfits for JC, a reinterpretation). Needs the
+    Direct3D 10 or 11 renderer. A Steam user calls it an AI upscale; the author's page does
+    not say how it was made, so fidelity is unknown until compared.
+  sources:
+    - https://www.moddb.com/mods/helios-texture-overhaul
+    - https://steamcommunity.com/app/6910/discussions/0/2260186248403918607
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: Deus Ex Remastered (Aspyr)
+  url: https://store.steampowered.com/app/3131640/Deus_Ex_Remastered/
+  kind: official-remaster
+  status: none
+  axes: { display: yes, textures: yes, rendering: yes, audio: unknown, port: no }
+  fidelity: reinterpretation
+  game_versions: [separate release, not a mod]
+  requires: []
+  conflicts_with: []
+  open_source: "no"
+  redistribution: forbidden
+  last_activity: 2025-12
+  qa: none
+  notes: >-
+    Announced 2025-09 for 2026-02-05, then delayed in 2025-12 with no new date and
+    pre-orders refunded; the Steam page says "To be announced" (checked 2026-10-31).
+    Store page lists new lighting, shadows, textures and character models, ultrawide and
+    4K UI, controller support. Coverage ties the delay to criticism of the new visuals.
+  sources:
+    - https://store.steampowered.com/app/3131640/Deus_Ex_Remastered/
+    - https://www.gamespot.com/articles/deus-ex-remastered-delayed-to-better-meet-fan-expectations/1100-6536890/
+    - https://www.gamingonlinux.com/2025/09/deus-ex-remastered-announced-and-arrives-in-february-2026
+  checked: 2026-10-31
+
+- game: Deus Ex
+  slug: deus-ex
+  year: 2000
+  engine: Unreal Engine 1
+  project: (none found)
+  url: ""
+  kind: gap
+  status: none
+  axes: { display: no, textures: yes, rendering: no, audio: no, port: no }
+  fidelity: unknown
+  game_versions: [GOTY 1.112fm]
+  open_source: unknown
+  redistribution: unknown
+  last_activity: unknown
+  qa: none
+  notes: >-
+    No faithful texture upscale made with current models that covers every texture class
+    (world, characters, items, UI, fonts), re-encodes to S3TC with mipmaps and works with
+    any S3TC-capable renderer. Closest: New Vision 2.0a (2019 alpha, Direct3D 10 only).
+    New Vision 1.5 and HDTP change the art style.
+  searched:
+    - PCGamingWiki Deus Ex page, 2026-10-31
+    - ModDB (New Vision, HDTP, Helios), 2026-10-31
+    - Nexus Mods Deus Ex section (via search), 2026-10-31
+    - Web search "Deus Ex AI upscaled textures", 2026-10-31
+  sources:
+    - https://www.moddb.com/mods/new-vision
+    - https://www.pcgamingwiki.com/wiki/Deus_Ex
+  checked: 2026-10-31
