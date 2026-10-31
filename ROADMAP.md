@@ -27,7 +27,7 @@ waits until phase 3 is done and the directory has at least 10 entries.
 
 ## Phase 3: pilot, Deus Ex (2000)
 - [ ] Triage and identity record
-- [ ] Research: every fix, renderer, texture pack, with conflicts and licenses
+- [x] Research: every fix, renderer, texture pack, with conflicts and licenses (web only, 2026-10-31)
 - [ ] Baseline captures and performance
 - [ ] Display and texture passes
 - [ ] QA level `automated` reached

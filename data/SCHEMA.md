@@ -42,6 +42,10 @@ A future `build-directory` script will render `DIRECTORY.md` from it: edit the Y
   the game's folder in `games/` and never changes once used.
 - Every entry needs at least one source and a `checked` date.
 - Gaps use `kind: gap`, `project: "(none found)"`, `status: none`, an empty `url`, and a
-  `searched:` field listing where and when you looked.
+  `searched:` field listing where and when you looked. In a gap, `axes` marks the missing
+  axis with `yes` and the others `no`, so a search by axis finds the gap too. Say in `notes`
+  what exactly is missing and what comes closest.
+- Total overhaul mods that redesign levels or gameplay (Deus Ex's Revision or GMDX, say)
+  don't fit any `kind` yet: mention them in the game's `NOTES.md` instead of forcing a kind.
 - `fidelity: reinterpretation` is allowed in the directory, but recipes include it only as
   an optional, labelled step.
