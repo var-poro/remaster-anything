@@ -25,12 +25,16 @@ families:
       - { ext: [.int], strength: weak }
       - magic: { ext: [.u, .utx, .uax, .umx, .unr], hex: "c1832a9e", offset: 0, u16le: { offset: 4, min: 0, max: 99 } }
         strength: strong
-        note: Unreal package tag 0x9E2A83C1, package version below 100 (range approximate)
+        note: Unreal package tag 0x9E2A83C1, package version below 100 (Unreal 61-65, UT 67-69)
     renderer_config:
       files: ["*.ini"]
       section: Engine.Engine
       keys: [GameRenderDevice, RenderDevice]
-    sources: []
+    # Checked 2026-10-31 on Unreal Gold (226, archive.org ISO approved by Epic): every package
+    # starts with the tag, versions 60 to 68; renderer keys are in System/Unreal.ini.
+    sources:
+      - https://unrealarchive.org/wikis/unreal-wiki/Legacy:Package_File_Format.html
+      - https://github.com/OldUnreal/FullGameInstallers
 
   - id: unreal-2
     name: Unreal Engine 2 / 2.5

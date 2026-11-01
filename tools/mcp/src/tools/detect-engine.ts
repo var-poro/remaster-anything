@@ -90,13 +90,17 @@ const RANK: Record<Confidence, number> = { high: 3, medium: 2, low: 1 };
 
 /** Redistributables, installers and uninstallers shipped next to the game. */
 const INSTALLER =
-  /(^|\/)(_?commonredist|redist\w*|prerequisites|directx|support|installers?|__installer)(\/|$)|vcredist|dxsetup|d3d\w*install|(^|\/)(setup|unins\d*)\.exe$/i;
+  /(^|\/)(_?commonredist|redist\w*|prerequisites|directx|support|installers?|__installer)(\/|$)|vcredist|dxsetup|d3d\w*install|(^|\/)(setup|unins\d*)\.exe$|(^|\/)[^/]*install[^/]*\.exe$/i;
 
-/** Likely main executables first: installers last, then the largest files. */
+/** Editors, command-line tools and crash reporters: real programs, but not the game. */
+const TOOL = /(^|\/)(unrealed\w*|ued\d*|ucc|lcc|[^/]*editor[^/]*|[^/]*crash\w*report[^/]*|[^/]*benchmark[^/]*)\.exe$/i;
+
+/** Likely main executables first: the game, then tools, then installers; largest first within each. */
 function rankExecutables(files: ScannedFile[]): string[] {
+  const tier = (rel: string) => (INSTALLER.test(rel) ? 2 : TOOL.test(rel) ? 1 : 0);
   return files
     .filter((f) => f.ext === ".exe")
-    .sort((a, b) => Number(INSTALLER.test(a.rel)) - Number(INSTALLER.test(b.rel)) || b.size - a.size)
+    .sort((a, b) => tier(a.rel) - tier(b.rel) || b.size - a.size)
     .map((f) => f.rel);
 }
 
