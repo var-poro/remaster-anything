@@ -180,6 +180,46 @@ them freely. With the memory budget above, a likely split is 2x SwinIR for most 
 textures and 4x PBRify for the classes seen up close (skins, weapons, detail), to confirm in
 the game.
 
+### In-game test 1 (2026-11-01): Vortex2 through the D3D10 renderer
+
+Loading path chosen: [Kentie's Direct3D 10 renderer](https://kentie.net/article/d3d10drv/)
+v29 (`Unreal_226_Gold` build, zip SHA-256 `1bd1973a477d`), which replaces any game texture
+with a `.dds` file and leaves the packages untouched.
+
+- Layout: `Textures\<Package>\<Group>\<Name>.dds`, plus an optional `<Name>.dds.flags` text
+  file of extra `PolyFlags` (e.g. `0x00001000` for alpha blending), and `.detail`, `.bump`,
+  `.height` extra layers. Source: Kentie's example archive `unatco.zip`
+  ([artist info](https://kentie.net/article/d3d10drv/page2.htm)).
+- Kentie states the renderer does not work with 227, so this path keeps the 226 base.
+- Needs `d3dx10_43.dll` (DirectX June 2010) and the VC++ 2010 x86 runtime (read from the
+  DLL's imports). Both were already present on the owner's PC.
+- The renderer's source (texture converter) confirms the mask rule: on a masked texture,
+  palette index 0 is transparent. The override DDS carries it as alpha 0.
+- 227k has no import commandlet; repacking would mean `ucc make` with `#exec TEXTURE IMPORT`
+  and playing on 227. Not tried.
+
+Batch: the textures `Vortex2.unr` (first level) imports, read from its import table: 112,
+mostly `PlayrShp`. Animation chains added, procedural textures left out: 121 textures,
+4x-PBRify-UpscalerV4, uncompressed BGRA DDS with a full mip chain (271 MB). One texture the
+map names (`UnrealI.Icons.Crosshair6`) is not in the 226 inventory. Textures of actors
+(weapons, creatures, decorations) are not in a map's imports and were not covered.
+
+Captures, without the owner at the keyboard: the game is started windowed (1600x900) on
+`Vortex2.unr`, keys are posted to its window (`PlayersOnly` to freeze the world, `Shot` on
+F9, two bound turn keys), then it is closed. Three copies, same config: stock D3D10, D3D10
+with the upscaled batch, and a control with the original pixels written as DDS.
+
+- The upscaled textures load and render, with no missing or black surfaces.
+- Light pulses: two runs of the same stock copy differ by up to 11% in mean brightness,
+  depending on when the world is frozen. The control matched the stock run it was compared
+  with (ratio 1.000), so the override path itself does not change colours. Before/after
+  pairs must be chosen with matching light: the stock run used is within 0.7 to 4%.
+- Result: sharper floor plates, hazard stripes and light panels at 1600x900, same colours
+  and mood. The gain is smallest on dark walls.
+
+Next: block-compressed DDS (DXT1/DXT5) instead of uncompressed, the 2x SwinIR / 4x PBRify
+split, actor textures, and a capture method that is not affected by pulsing lights.
+
 ## Observations
 
 - `detect_engine` read the headers of only 20 packages out of 302 (the per-signal cap,
@@ -203,16 +243,14 @@ the game.
 
 From memory of UE1, to confirm:
 
-- Masked textures use palette index 0 for transparency. The test crops agree (index 0 is
-  the hole colour on two grates, blue on one and black on the other), but the engine's rule
-  is not checked.
 - `PolyFlags` bits: 0x2 masked, 0x4 translucent, 0x40 modulated. Only the masked bit is
   set on any texture here; translucency is likely set per surface or actor instead.
 
 ## Capture plan
 
-To write at baseline (`remaster-qa`). Needs the owner to launch the game: no screen access
-from the agent.
+Scripted runs work (see In-game test 1): start the map windowed, freeze with `PlayersOnly`,
+`Shot` from fixed turns. To do: viewpoints beyond the spawn point, and a way around pulsing
+lights (several shots per view, pick the matching pair).
 
 ## Log
 
@@ -221,4 +259,5 @@ from the agent.
 - 2026-11-01: identity record written. 226 UCC cannot export; 227k downloaded and installed on
   a test copy; 4430 textures exported from the 226 packages and inventoried. First upscale
   test: Lanczos, Real-ESRGAN x2 and x4, 4x-UltraSharpV2 on 12 textures. Second test: mask fill,
-  five more models; 4x-PBRify-UpscalerV4 and 2x SwinIR-M kept.
+  five more models; 4x-PBRify-UpscalerV4 and 2x SwinIR-M kept. In-game test: Vortex2 batch
+  loaded through Kentie's D3D10 overrides, scripted captures with a control copy.
