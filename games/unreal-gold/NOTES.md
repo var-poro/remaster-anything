@@ -35,12 +35,51 @@ copy is never modified; every test runs on a separate copy (paths in `local/`).
   10 renderer (supports 226), darknovismc's DirectX 11 renderer (lists Unreal Gold).
 - No official remaster known.
 
-## Textures: first inventory
+## Textures: extraction and inventory (2026-11-01)
 
-- 52 `.utx` packages in `Textures/` (121 MB): world sets, effects, skies, skins, fonts and
-  menu graphics (`MenuGr`, `UWindowFonts`, `UPakFonts`), palettes.
-- Extraction must also look inside maps and code packages (see Guesses) before assuming
-  `Textures/` is complete.
+### How they were extracted
+
+- The 226 `UCC.exe` has no export commandlet (only `master`, `make`, `conform`, `server`,
+  per `System/Editor.int` and `Engine.int`). UnrealEd 226 can export, but only by hand.
+- OldUnreal 227k ([v227k_15](https://github.com/OldUnreal/Unreal-testing/releases/tag/v227k_15),
+  Windows zip, SHA-256 matches the release digest) has `batchexport` (BMP or PCX) and
+  `dumptextureinfo`. It was installed on a separate test copy, never on the pristine one.
+- 227k replaces three original texture packages (`SkyBox`, `UPakFonts`, `UWindowFonts`) and
+  every code package in `System/`. The replaced `.utx` files were left out of the patch so
+  the 226 versions were exported. The 226 code packages were copied under another name
+  (`UnrealShare226.u`...) so they load next to 227k's own: this works for every package
+  except `Core.u` (no textures) and `Engine.u` (38 textures, mostly editor icons, fail to
+  load with 227k's classes: serial size mismatch).
+- Commands, from the test copy's `System` folder:
+  `ucc batchexport <package> texture bmp <out dir>` and `ucc dumptextureinfo <package>`.
+
+### What there is
+
+| | Count |
+|---|---|
+| Textures exported (BMP, 8-bit paletted) | 4430: 3319 in 52 `.utx`, 1111 in 8 code packages |
+| Biggest code packages | `UnrealShare` 651, `UMenu` 143, `UnrealI` 125, `UPak` 118 |
+| Textures embedded in maps | 0 (55 maps exported, 3 also dumped) |
+| Format | all `TEXF_P8` (paletted), with mipmaps |
+| Size (largest side) | 128: 1840, 256: 1613, 64: 473, 32: 333, 512: 35, 1024: 1, smaller: 135 |
+| Non-square | 1302 |
+| Masked (`PolyFlags` bit 0x2) | 760 |
+| Animated (`AnimNext` set) | 319 |
+| Procedural, generated at run time | 226: `FireTexture` 140, `WetTexture` 75, `IceTexture` 7, `WaveTexture` 4 |
+| Using a detail texture / macro texture | 1886 / 29 |
+| Total base-level pixels | 112 million |
+
+Per-package dump counts match the exported file counts. The exports, dumps and inventory
+stay outside the repo (paths in `local/`).
+
+### What it means for the texture pass
+
+- Procedural textures (`FireTexture`, `WaveTexture`) are drawn by the engine each frame: the
+  exported image is not what the player sees, so they must not be upscaled as images. Wet and
+  ice textures distort a source texture (from memory, to confirm), which could be upscaled.
+- Masked textures need their mask kept sharp through the upscale (no blended edges).
+- Animated chains (`AnimNext`) must be upscaled as a set, so frames stay consistent.
+- Detail textures are drawn over 1886 surfaces at close range: they belong in their own class.
 
 ## Observations
 
@@ -54,15 +93,20 @@ copy is never modified; every test runs on a separate copy (paths in `local/`).
 - Patch 226b is the version Kentie's D3D10 renderer supports, so the stock disc is a usable
   base for a display recipe without OldUnreal's 227. Whether 227 is the better base is a
   research question.
+- Memory budget: 112 million base pixels become 448 million at 2x and 1.8 billion at 4x.
+  Compressed (DXT1 0.5 byte per pixel, DXT5 1 byte) plus a third for mipmaps, that is roughly
+  0.3 to 0.6 GB at 2x and 1.2 to 2.4 GB at 4x, if every texture were loaded at once. A
+  uniform 4x does not fit a 32-bit exe without LAA; per-class factors will be needed.
+- Code packages hold a quarter of the textures (1111 of 4430): a pass limited to
+  `Textures/` would miss the weapons, pickups and menus.
 
 ## Guesses
 
-From memory of UE1, to confirm on extraction:
+From memory of UE1, to confirm:
 
-- Maps (`.unr`) can embed their own textures, and code packages (`UnrealShare.u`,
-  `UnrealI.u`, `UPak.u`) carry some.
-- Most textures are 8-bit paletted with mipmaps; masked textures use palette index 0 for
-  transparency, so classification must keep masks apart.
+- Masked textures use palette index 0 for transparency.
+- `PolyFlags` bits: 0x2 masked, 0x4 translucent, 0x40 modulated. Only the masked bit is
+  set on any texture here; translucency is likely set per surface or actor instead.
 
 ## Capture plan
 
@@ -73,4 +117,5 @@ from the agent.
 
 - 2026-10-31: ISO downloaded and verified, game folders extracted, triage with
   `detect_engine` and `read_pe_info`; exe ranking fixed and `unreal-1` signature verified (#5).
-- 2026-11-01: identity record written.
+- 2026-11-01: identity record written. 226 UCC cannot export; 227k downloaded and installed on
+  a test copy; 4430 textures exported from the 226 packages and inventoried.
