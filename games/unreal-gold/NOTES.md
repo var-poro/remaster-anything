@@ -81,6 +81,51 @@ stay outside the repo (paths in `local/`).
 - Animated chains (`AnimNext`) must be upscaled as a set, so frames stay consistent.
 - Detail textures are drawn over 1886 surfaces at close range: they belong in their own class.
 
+### Upscale test 1 (2026-11-01)
+
+Setup: Python 3.10 venv outside the repo, PyTorch 2.14.1+cu130, spandrel 0.4.2, Pillow
+12.3.0, owner's RTX 3080 Ti (12 GB). Models from OpenModelDB, SHA-256 checked against its
+entries:
+
+| Method | Arch | License | SHA-256 (start) |
+|---|---|---|---|
+| Lanczos 4x (no model, reference) | | | |
+| [Real-ESRGAN x2plus](https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.1) | ESRGAN | BSD-3-Clause | `49fafd45f8fd` |
+| [Real-ESRGAN x4plus](https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.1.0) | ESRGAN | BSD-3-Clause | `4fa0d38905f7` |
+| [4x-UltraSharpV2](https://huggingface.co/Kim2091/UltraSharpV2) | DAT | CC-BY-NC-SA-4.0 | `2b5db674aa8f` |
+
+Test set, 12 textures: a wall, a door, two masked grates, a three-frame animated chain, a
+detail texture, a player skin, a menu logo, a font page and a sky. Masked textures: palette
+index 0 put back at its exact colour, at nearest-neighbour edges, after the upscale.
+
+Fidelity check: the upscaled image is box-downscaled to the original size and compared
+(PSNR, higher is closer; drift = largest shift of a channel's mean, in 0-255 levels).
+
+| Method | PSNR median (min) | Drift median (max) | Time per texture, median |
+|---|---|---|---|
+| Lanczos 4x | 40.3 (23.2) | 0.4 (2.3) | |
+| Real-ESRGAN x2plus | 29.9 (22.6) | 1.5 (7.0) | 73 ms |
+| Real-ESRGAN x4plus | 30.2 (25.6) | 2.3 (15.4) | 253 ms |
+| 4x-UltraSharpV2 | 38.0 (27.2) | 0.7 (4.1) | 702 ms |
+
+What the crops show (same regions, side by side):
+
+- Real-ESRGAN x4plus is a reinterpretation: it darkens and adds contrast (drift 15 on a
+  stone floor), smooths the original grain and draws new cracks. Out.
+- Real-ESRGAN x2plus also wipes the grain (the grates turn into smooth metal). Out.
+- 4x-UltraSharpV2 keeps colours and grain closest to the original and is clearly sharper
+  than Lanczos. It still invents fine scratches on noisy metal. Best candidate so far.
+- Lanczos wins on PSNR because the downscale-and-compare check rewards blur: PSNR alone
+  cannot rank methods, the crops are needed.
+- Masks: the mask colour here is pure blue. The models see it and bleed a fringe into the
+  edge of the bars. Fix to try: fill masked pixels from their neighbours before the upscale,
+  then put the mask back.
+- Font pages: every method blurs or deforms the glyphs. Fonts need their own path (nearest
+  neighbour, or redrawn at the new size) and the engine's font metrics must follow.
+
+Speed: at UltraSharpV2's median rate (0.7 s), the 4430 textures take about 50 minutes
+on this GPU.
+
 ## Observations
 
 - `detect_engine` read the headers of only 20 packages out of 302 (the per-signal cap,
@@ -104,7 +149,8 @@ stay outside the repo (paths in `local/`).
 
 From memory of UE1, to confirm:
 
-- Masked textures use palette index 0 for transparency.
+- Masked textures use palette index 0 for transparency. The test crops agree (index 0 is
+  pure blue in the gaps of a grate), but the engine's rule is not checked.
 - `PolyFlags` bits: 0x2 masked, 0x4 translucent, 0x40 modulated. Only the masked bit is
   set on any texture here; translucency is likely set per surface or actor instead.
 
@@ -118,4 +164,5 @@ from the agent.
 - 2026-10-31: ISO downloaded and verified, game folders extracted, triage with
   `detect_engine` and `read_pe_info`; exe ranking fixed and `unreal-1` signature verified (#5).
 - 2026-11-01: identity record written. 226 UCC cannot export; 227k downloaded and installed on
-  a test copy; 4430 textures exported from the 226 packages and inventoried.
+  a test copy; 4430 textures exported from the 226 packages and inventoried. First upscale
+  test: Lanczos, Real-ESRGAN x2 and x4, 4x-UltraSharpV2 on 12 textures.
