@@ -126,6 +126,60 @@ What the crops show (same regions, side by side):
 Speed: at UltraSharpV2's median rate (0.7 s), the 4430 textures take about 50 minutes
 on this GPU.
 
+### Upscale test 2 (2026-11-01): mask fix and more models
+
+Changes from test 1:
+- Masked pixels are filled from their unmasked neighbours (growing inward) before the
+  upscale, so the model never sees the mask colour.
+- The mask goes back two ways: nearest-neighbour edges, or a Lanczos-upscaled mask
+  thresholded at 0.5.
+- Fidelity is measured on unmasked pixels only.
+- Real-ESRGAN dropped. A third masked texture added (13 textures).
+
+New models, chosen on OpenModelDB for a direct GitHub download and a published SHA-256:
+
+| Method | Arch | License | SHA-256 (start) |
+|---|---|---|---|
+| [4x-PBRify-UpscalerV4](https://github.com/Kim2091/Kim2091-Models/releases/tag/4x-PBRify_UpscalerV4) | DAT | CC0-1.0 | `82db39e31e01` |
+| [4x-TextureDAT2-otf](https://github.com/Phhofm/models/releases/tag/4xTextureDAT2_otf) | DAT | CC-BY-4.0 | `201fd1cfe380` |
+| [4x-Textures-GTAV-rgt-s](https://github.com/Phhofm/models/releases/tag/4xTextures_GTAV_rgt-s) | RGT | CC-BY-4.0 | `5a1f614d41d7` |
+| [2x-AoMR-mosr](https://github.com/Phhofm/models/releases/tag/2xAoMR_mosr) | MoSR | CC-BY-4.0 | `6297be8b3671` |
+| [2x SwinIR-M classical (DF2K)](https://github.com/JingyunLiang/SwinIR/releases/tag/v0.0) | SwinIR | Apache-2.0 | `2032ebf8f401` |
+
+Fidelity, font page excluded (12 textures):
+
+| Method | PSNR median (min) | Drift median (max) | Time, median |
+|---|---|---|---|
+| Lanczos 4x | 40.3 (34.7) | 0.3 (0.7) | |
+| 4x-PBRify-UpscalerV4 | 39.5 (33.2) | 0.5 (1.3) | 579 ms |
+| 2x SwinIR-M | 38.9 (33.3) | 0.4 (0.5) | 344 ms |
+| 4x-UltraSharpV2 | 38.3 (30.2) | 1.0 (4.1) | 572 ms |
+| 2x-AoMR-mosr | 34.3 (32.5) | 1.5 (3.1) | 54 ms |
+| 4x-Textures-GTAV-rgt-s | 34.1 (28.4) | 2.4 (7.6) | 485 ms |
+| 4x-TextureDAT2-otf | 31.5 (29.0) | 2.2 (5.5) | 570 ms |
+
+What the crops show:
+
+- Mask fill works: no more fringe of mask colour on the grate edges.
+- Nearest-neighbour mask edges stay. The thresholded smooth mask rounds the corners of
+  square holes, which changes the shape.
+- The mask colour differs per texture (blue on one grate, black on another): it is index 0
+  that matters, not a fixed colour.
+- 4x-PBRify-UpscalerV4: closest 4x to the originals, sharper than Lanczos, little invented
+  detail (a slight added relief on stone). Best 4x candidate.
+- 2x SwinIR-M (classical, non-GAN): very faithful, a little sharper than Lanczos, softer
+  than the 4x models. Best 2x candidate.
+- 4x-UltraSharpV2: sharp but invents crisp rock relief and scratches. Second choice, and
+  its non-commercial license is a drawback for a public recipe.
+- 4x-TextureDAT2-otf: darker, lots of invented detail. Out.
+- 4x-Textures-GTAV-rgt-s: a brighter band across a bar of the grate, a visible defect. Out.
+- 2x-AoMR-mosr: worm-like noise patterns on grain. Out.
+
+Both candidates have permissive licenses (CC0, Apache-2.0), so a recipe can name and fetch
+them freely. With the memory budget above, a likely split is 2x SwinIR for most world
+textures and 4x PBRify for the classes seen up close (skins, weapons, detail), to confirm in
+the game.
+
 ## Observations
 
 - `detect_engine` read the headers of only 20 packages out of 302 (the per-signal cap,
@@ -150,7 +204,8 @@ on this GPU.
 From memory of UE1, to confirm:
 
 - Masked textures use palette index 0 for transparency. The test crops agree (index 0 is
-  pure blue in the gaps of a grate), but the engine's rule is not checked.
+  the hole colour on two grates, blue on one and black on the other), but the engine's rule
+  is not checked.
 - `PolyFlags` bits: 0x2 masked, 0x4 translucent, 0x40 modulated. Only the masked bit is
   set on any texture here; translucency is likely set per surface or actor instead.
 
@@ -165,4 +220,5 @@ from the agent.
   `detect_engine` and `read_pe_info`; exe ranking fixed and `unreal-1` signature verified (#5).
 - 2026-11-01: identity record written. 226 UCC cannot export; 227k downloaded and installed on
   a test copy; 4430 textures exported from the 226 packages and inventoried. First upscale
-  test: Lanczos, Real-ESRGAN x2 and x4, 4x-UltraSharpV2 on 12 textures.
+  test: Lanczos, Real-ESRGAN x2 and x4, 4x-UltraSharpV2 on 12 textures. Second test: mask fill,
+  five more models; 4x-PBRify-UpscalerV4 and 2x SwinIR-M kept.
