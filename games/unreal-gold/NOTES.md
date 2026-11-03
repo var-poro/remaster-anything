@@ -220,6 +220,47 @@ with the upscaled batch, and a control with the original pixels written as DDS.
 Next: block-compressed DDS (DXT1/DXT5) instead of uncompressed, the 2x SwinIR / 4x PBRify
 split, actor textures, and a capture method that is not affected by pulsing lights.
 
+### In-game test 2 (2026-11-03): every texture, block-compressed
+
+Compression: `texconv` from [DirectXTex](https://github.com/microsoft/DirectXTex) (release
+may2026, SHA-256 `dcfdec10244e`). BC1 for opaque textures, BC3 for masked ones (alpha 0 on
+palette index 0, alpha mipmaps thresholded at 0.5 so alpha testing keeps its shape). Kentie
+recommends DXT1/DXT5 and does not support BC7.
+
+- On the Vortex2 batch: 271 MB uncompressed, 20 MB compressed, mean PSNR 38.6 dB against the
+  uncompressed textures, and no visible difference in game.
+
+Full run, 4x-PBRify-UpscalerV4, every texture in the inventory:
+
+| Inventoried | Written | BC1 | BC3 | Procedural | Font | Under 8 px |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 4430 | 3962 | 3514 | 448 | 226 | 207 | 35 |
+
+- 1.1 GB on disk. Every file has a valid header and a full mipmap chain. The largest is
+  4096x2048 (`Skaarj.Deco.Aa_clw`).
+- Engine's 38 textures are not in it (not exported, see the inventory).
+- Speed depends on whether the GPU is shared: about 13 s per 256x256 texture when other
+  applications were using it; the last 1772 textures took 1.4 h overnight.
+
+Captures: four maps with different settings (NyLeve, Dig, Ruins, DasaPass), stock D3D10
+against D3D10 with all overrides. The script takes five shots from the spawn view per run,
+unfreezing the world briefly between them, and the pair with the closest mean brightness is
+kept: every pair is within 0.2%.
+
+- Memory: 124 to 144 MB private and about 700 MB peak virtual with all overrides, the same as
+  stock. The overrides are held by the GPU, not in the game's address space.
+- Rock, wood and stone: much sharper. Ruins' cracks and floor grain become readable,
+  DasaPass's door shows its wood grain, the stone blocks get edges. Colours and mood stay.
+  Ruins' cracks also gain contrast (darker lines than the blurred original); to watch.
+- HUD icons are fine: drawn small on screen, the 4x texture only looks a little smoother.
+- Defect: glow sprites. In Dig, the lamp coronas go from a soft halo to a hard-edged disc
+  with thin, sharp rays. The textures are `GenFX.LensFlar.Flarel~6` and `ShaneDay.FLARE10`:
+  the model sharpens soft gradients that were meant to be soft.
+- A black-border test (border at least 98% near-black, at least 35% near-black overall, not
+  masked) flags 209 textures: flares, smoke, explosions, sparks, moons, nebulae, but also
+  screens, credits, logos and panels, which gain from sharpening. A name rule is worse
+  (`beam` is also a pillar, `I_Flare` an icon). The class rule is not decided yet.
+
 ## Observations
 
 - `detect_engine` read the headers of only 20 packages out of 302 (the per-signal cap,
@@ -234,8 +275,10 @@ split, actor textures, and a capture method that is not affected by pulsing ligh
   research question.
 - Memory budget: 112 million base pixels become 448 million at 2x and 1.8 billion at 4x.
   Compressed (DXT1 0.5 byte per pixel, DXT5 1 byte) plus a third for mipmaps, that is roughly
-  0.3 to 0.6 GB at 2x and 1.2 to 2.4 GB at 4x, if every texture were loaded at once. A
-  uniform 4x does not fit a 32-bit exe without LAA; per-class factors will be needed.
+  0.3 to 0.6 GB at 2x and 1.2 to 2.4 GB at 4x, if every texture were loaded at once. This
+  would not fit a 32-bit exe without LAA if the textures lived in the game's memory, but with
+  the D3D10 overrides they live on the GPU (In-game test 2: game memory unchanged), so a
+  uniform 4x works on this path.
 - Code packages hold a quarter of the textures (1111 of 4430): a pass limited to
   `Textures/` would miss the weapons, pickups and menus.
 
@@ -248,9 +291,11 @@ From memory of UE1, to confirm:
 
 ## Capture plan
 
-Scripted runs work (see In-game test 1): start the map windowed, freeze with `PlayersOnly`,
-`Shot` from fixed turns. To do: viewpoints beyond the spawn point, and a way around pulsing
-lights (several shots per view, pick the matching pair).
+Scripted runs work (see In-game tests 1 and 2): start the map windowed, freeze with
+`PlayersOnly`, take several `Shot`s from the spawn view with short unfrozen gaps between them,
+and keep the before/after pair with the closest mean brightness. Maps so far: Vortex2,
+NyLeve, Dig, Ruins, DasaPass. To do: viewpoints beyond the spawn point, outdoor views, and a
+view with creatures and weapon effects.
 
 ## Log
 
@@ -261,3 +306,5 @@ lights (several shots per view, pick the matching pair).
   test: Lanczos, Real-ESRGAN x2 and x4, 4x-UltraSharpV2 on 12 textures. Second test: mask fill,
   five more models; 4x-PBRify-UpscalerV4 and 2x SwinIR-M kept. In-game test: Vortex2 batch
   loaded through Kentie's D3D10 overrides, scripted captures with a control copy.
+- 2026-11-03: BC1/BC3 compression; every eligible texture (3962) upscaled and compressed;
+  in-game before/after on four more maps; glow sprites found to be harmed by the model.
