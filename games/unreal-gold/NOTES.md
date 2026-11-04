@@ -256,10 +256,33 @@ kept: every pair is within 0.2%.
 - Defect: glow sprites. In Dig, the lamp coronas go from a soft halo to a hard-edged disc
   with thin, sharp rays. The textures are `GenFX.LensFlar.Flarel~6` and `ShaneDay.FLARE10`:
   the model sharpens soft gradients that were meant to be soft.
-- A black-border test (border at least 98% near-black, at least 35% near-black overall, not
-  masked) flags 209 textures: flares, smoke, explosions, sparks, moons, nebulae, but also
-  screens, credits, logos and panels, which gain from sharpening. A name rule is worse
-  (`beam` is also a pillar, `I_Flare` an icon). The class rule is not decided yet.
+
+### Glow sprites (2026-11-04): kept as original
+
+Glows, smoke and other soft effects are drawn additively on black. The upscaler sharpens
+their gradients into edges, so they keep the original texture (no override). How they were
+picked:
+
+1. Candidates: not masked, not procedural, border at least 98% near-black (max channel under
+   12) and at least 35% near-black overall. 209 textures: flares, smoke, explosions, sparks,
+   moons and nebulae, but also screens, credits, logos and panels. A name rule is worse
+   (`beam` is also a pillar, `I_Flare` an icon).
+2. Softness: mean absolute Laplacian of the luminance over lit pixels, divided by their mean
+   luminance; and "ink", the share of lit pixels next to a step of more than 64 levels.
+   Rule: glow when softness < 0.36 and ink < 0.13. Credits and most screens and logos
+   fall outside it (text gives them ink above 0.1); the exceptions are caught in step 3.
+3. Checked by eye on a sheet of every candidate, original next to upscaled. 28 changed by
+   hand. Six patterned or solid textures moved out (SkyCity's three lanterns,
+   `GenIn.Deco.Ship`, `Langs.ocrana`, `UPak.Skins.Jpyramid1`). Twenty-two soft effects moved
+   in: the eight electric arcs, seven explosion flames, two smoke frames, `Effects.T_PawnT`,
+   two nebulae and two blood puffs. The rule missed them, mostly on softness.
+4. Animations: every frame of a chain (`AnimNext`) takes the same class, otherwise a flame
+   would alternate between original and upscaled frames. This adds 19 frames that were not
+   candidates.
+
+Result: 118 textures kept as original, 3844 overrides left. Moons, star fields, credits,
+screens and logos stay upscaled. In Dig the lamp coronas match the original again, and the
+rock keeps its gain. The rule is tuned on this game: other games need the same check by eye.
 
 ## Observations
 
@@ -308,3 +331,4 @@ view with creatures and weapon effects.
   loaded through Kentie's D3D10 overrides, scripted captures with a control copy.
 - 2026-11-03: BC1/BC3 compression; every eligible texture (3962) upscaled and compressed;
   in-game before/after on four more maps; glow sprites found to be harmed by the model.
+- 2026-11-04: glow sprites classified (118 kept as original), Dig captured again.
