@@ -1,0 +1,334 @@
+# Unreal Gold (2000): working notes
+
+Second game, used to test the tools and skills on a real Unreal Engine 1 install while the
+Deus Ex pilot waits for the owner's copy. Status: triage done on the extracted disc, game not
+launched yet.
+
+## Identity
+
+| Field | Value | How we know |
+|---|---|---|
+| Store / version | Disc image, Unreal Gold 226b, not patched | `System/Manifest.ini` (`Product=Unreal Gold`, `Version=226b`); ISO from the [OldUnreal installer list](https://github.com/OldUnreal/FullGameInstallers), SHA-1 matches archive.org |
+| Main exe + SHA-256 | `System/Unreal.exe`, `2bd22dba9cd13c4159f19e0bfccae73f53f8e3f27300c1693e95f8c9d4c330ac` | `read_pe_info` |
+| Bitness | 32-bit (i386), built 2000-08-17 | `read_pe_info` (PE `Machine` 0x14c, timestamp) |
+| Engine | Unreal Engine 1 | `detect_engine`: `unreal-1` high, verified; package tag `0x9E2A83C1` with versions 60 to 68 in every package |
+| Renderer API(s) | Pluggable renderers: Direct3D (`D3DDrv`), OpenGL (`OpenGlDrv`), Glide, S3 MeTaL, software. Default config: software | `detect_engine` renderer modules; `GameRenderDevice=SoftDrv.SoftwareRenderDevice` in `System/Unreal.ini` and `Default.ini`. The exe itself imports no graphics DLL |
+| Large address aware | no | `read_pe_info` |
+| Install size | 726 files, 659 MB (Maps 275, Sounds 154, Textures 121, System 67, Music 42) | extracted copy |
+| Owner's OS / GPU / display | unknown | ask |
+
+Install: game folders copied straight from the ISO (`Help`, `Maps`, `Music`, `Sounds`,
+`System`, `Textures`), without the disc's installer, autorun or DirectX setup. The pristine
+copy is never modified; every test runs on a separate copy (paths in `local/`).
+
+## Scope agreed with the owner
+
+- Axes: display & comfort, textures (v1), to confirm
+- Target resolution / aspect / refresh: unknown
+- Fidelity: strictly faithful (default)
+
+## Prior work (not researched yet)
+
+- Nothing in `data/directory.yaml` or `games/` for Unreal Gold.
+- Known leads for `remaster-research`: OldUnreal's community patch 227 (Epic-approved, adds
+  modern renderers and fixes, and is what the OldUnreal installers apply), Kentie's Direct3D
+  10 renderer (supports 226), darknovismc's DirectX 11 renderer (lists Unreal Gold).
+- No official remaster known.
+
+## Textures: extraction and inventory (2026-11-01)
+
+### How they were extracted
+
+- The 226 `UCC.exe` has no export commandlet (only `master`, `make`, `conform`, `server`,
+  per `System/Editor.int` and `Engine.int`). UnrealEd 226 can export, but only by hand.
+- OldUnreal 227k ([v227k_15](https://github.com/OldUnreal/Unreal-testing/releases/tag/v227k_15),
+  Windows zip, SHA-256 matches the release digest) has `batchexport` (BMP or PCX) and
+  `dumptextureinfo`. It was installed on a separate test copy, never on the pristine one.
+- 227k replaces three original texture packages (`SkyBox`, `UPakFonts`, `UWindowFonts`) and
+  every code package in `System/`. The replaced `.utx` files were left out of the patch so
+  the 226 versions were exported. The 226 code packages were copied under another name
+  (`UnrealShare226.u`...) so they load next to 227k's own: this works for every package
+  except `Core.u` (no textures) and `Engine.u` (38 textures, mostly editor icons, fail to
+  load with 227k's classes: serial size mismatch).
+- Commands, from the test copy's `System` folder:
+  `ucc batchexport <package> texture bmp <out dir>` and `ucc dumptextureinfo <package>`.
+
+### What there is
+
+| | Count |
+|---|---|
+| Textures exported (BMP, 8-bit paletted) | 4430: 3319 in 52 `.utx`, 1111 in 8 code packages |
+| Biggest code packages | `UnrealShare` 651, `UMenu` 143, `UnrealI` 125, `UPak` 118 |
+| Textures embedded in maps | 0 (55 maps exported, 3 also dumped) |
+| Format | all `TEXF_P8` (paletted), with mipmaps |
+| Size (largest side) | 128: 1840, 256: 1613, 64: 473, 32: 333, 512: 35, 1024: 1, smaller: 135 |
+| Non-square | 1302 |
+| Masked (`PolyFlags` bit 0x2) | 760 |
+| Animated (`AnimNext` set) | 319 |
+| Procedural, generated at run time | 226: `FireTexture` 140, `WetTexture` 75, `IceTexture` 7, `WaveTexture` 4 |
+| Using a detail texture / macro texture | 1886 / 29 |
+| Total base-level pixels | 112 million |
+
+Per-package dump counts match the exported file counts. The exports, dumps and inventory
+stay outside the repo (paths in `local/`).
+
+### What it means for the texture pass
+
+- Procedural textures (`FireTexture`, `WaveTexture`) are drawn by the engine each frame: the
+  exported image is not what the player sees, so they must not be upscaled as images. Wet and
+  ice textures distort a source texture (from memory, to confirm), which could be upscaled.
+- Masked textures need their mask kept sharp through the upscale (no blended edges).
+- Animated chains (`AnimNext`) must be upscaled as a set, so frames stay consistent.
+- Detail textures are drawn over 1886 surfaces at close range: they belong in their own class.
+
+### Upscale test 1 (2026-11-01)
+
+Setup: Python 3.10 venv outside the repo, PyTorch 2.14.1+cu130, spandrel 0.4.2, Pillow
+12.3.0, owner's RTX 3080 Ti (12 GB). Models from OpenModelDB, SHA-256 checked against its
+entries:
+
+| Method | Arch | License | SHA-256 (start) |
+|---|---|---|---|
+| Lanczos 4x (no model, reference) | | | |
+| [Real-ESRGAN x2plus](https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.2.1) | ESRGAN | BSD-3-Clause | `49fafd45f8fd` |
+| [Real-ESRGAN x4plus](https://github.com/xinntao/Real-ESRGAN/releases/tag/v0.1.0) | ESRGAN | BSD-3-Clause | `4fa0d38905f7` |
+| [4x-UltraSharpV2](https://huggingface.co/Kim2091/UltraSharpV2) | DAT | CC-BY-NC-SA-4.0 | `2b5db674aa8f` |
+
+Test set, 12 textures: a wall, a door, two masked grates, a three-frame animated chain, a
+detail texture, a player skin, a menu logo, a font page and a sky. Masked textures: palette
+index 0 put back at its exact colour, at nearest-neighbour edges, after the upscale.
+
+Fidelity check: the upscaled image is box-downscaled to the original size and compared
+(PSNR, higher is closer; drift = largest shift of a channel's mean, in 0-255 levels).
+
+| Method | PSNR median (min) | Drift median (max) | Time per texture, median |
+|---|---|---|---|
+| Lanczos 4x | 40.3 (23.2) | 0.4 (2.3) | |
+| Real-ESRGAN x2plus | 29.9 (22.6) | 1.5 (7.0) | 73 ms |
+| Real-ESRGAN x4plus | 30.2 (25.6) | 2.3 (15.4) | 253 ms |
+| 4x-UltraSharpV2 | 38.0 (27.2) | 0.7 (4.1) | 702 ms |
+
+What the crops show (same regions, side by side):
+
+- Real-ESRGAN x4plus is a reinterpretation: it darkens and adds contrast (drift 15 on a
+  stone floor), smooths the original grain and draws new cracks. Out.
+- Real-ESRGAN x2plus also wipes the grain (the grates turn into smooth metal). Out.
+- 4x-UltraSharpV2 keeps colours and grain closest to the original and is clearly sharper
+  than Lanczos. It still invents fine scratches on noisy metal. Best candidate so far.
+- Lanczos wins on PSNR because the downscale-and-compare check rewards blur: PSNR alone
+  cannot rank methods, the crops are needed.
+- Masks: the mask colour here is pure blue. The models see it and bleed a fringe into the
+  edge of the bars. Fix to try: fill masked pixels from their neighbours before the upscale,
+  then put the mask back.
+- Font pages: every method blurs or deforms the glyphs. Fonts need their own path (nearest
+  neighbour, or redrawn at the new size) and the engine's font metrics must follow.
+
+Speed: at UltraSharpV2's median rate (0.7 s), the 4430 textures take about 50 minutes
+on this GPU.
+
+### Upscale test 2 (2026-11-01): mask fix and more models
+
+Changes from test 1:
+- Masked pixels are filled from their unmasked neighbours (growing inward) before the
+  upscale, so the model never sees the mask colour.
+- The mask goes back two ways: nearest-neighbour edges, or a Lanczos-upscaled mask
+  thresholded at 0.5.
+- Fidelity is measured on unmasked pixels only.
+- Real-ESRGAN dropped. A third masked texture added (13 textures).
+
+New models, chosen on OpenModelDB for a direct GitHub download and a published SHA-256:
+
+| Method | Arch | License | SHA-256 (start) |
+|---|---|---|---|
+| [4x-PBRify-UpscalerV4](https://github.com/Kim2091/Kim2091-Models/releases/tag/4x-PBRify_UpscalerV4) | DAT | CC0-1.0 | `82db39e31e01` |
+| [4x-TextureDAT2-otf](https://github.com/Phhofm/models/releases/tag/4xTextureDAT2_otf) | DAT | CC-BY-4.0 | `201fd1cfe380` |
+| [4x-Textures-GTAV-rgt-s](https://github.com/Phhofm/models/releases/tag/4xTextures_GTAV_rgt-s) | RGT | CC-BY-4.0 | `5a1f614d41d7` |
+| [2x-AoMR-mosr](https://github.com/Phhofm/models/releases/tag/2xAoMR_mosr) | MoSR | CC-BY-4.0 | `6297be8b3671` |
+| [2x SwinIR-M classical (DF2K)](https://github.com/JingyunLiang/SwinIR/releases/tag/v0.0) | SwinIR | Apache-2.0 | `2032ebf8f401` |
+
+Fidelity, font page excluded (12 textures):
+
+| Method | PSNR median (min) | Drift median (max) | Time, median |
+|---|---|---|---|
+| Lanczos 4x | 40.3 (34.7) | 0.3 (0.7) | |
+| 4x-PBRify-UpscalerV4 | 39.5 (33.2) | 0.5 (1.3) | 579 ms |
+| 2x SwinIR-M | 38.9 (33.3) | 0.4 (0.5) | 344 ms |
+| 4x-UltraSharpV2 | 38.3 (30.2) | 1.0 (4.1) | 572 ms |
+| 2x-AoMR-mosr | 34.3 (32.5) | 1.5 (3.1) | 54 ms |
+| 4x-Textures-GTAV-rgt-s | 34.1 (28.4) | 2.4 (7.6) | 485 ms |
+| 4x-TextureDAT2-otf | 31.5 (29.0) | 2.2 (5.5) | 570 ms |
+
+What the crops show:
+
+- Mask fill works: no more fringe of mask colour on the grate edges.
+- Nearest-neighbour mask edges stay. The thresholded smooth mask rounds the corners of
+  square holes, which changes the shape.
+- The mask colour differs per texture (blue on one grate, black on another): it is index 0
+  that matters, not a fixed colour.
+- 4x-PBRify-UpscalerV4: closest 4x to the originals, sharper than Lanczos, little invented
+  detail (a slight added relief on stone). Best 4x candidate.
+- 2x SwinIR-M (classical, non-GAN): very faithful, a little sharper than Lanczos, softer
+  than the 4x models. Best 2x candidate.
+- 4x-UltraSharpV2: sharp but invents crisp rock relief and scratches. Second choice, and
+  its non-commercial license is a drawback for a public recipe.
+- 4x-TextureDAT2-otf: darker, lots of invented detail. Out.
+- 4x-Textures-GTAV-rgt-s: a brighter band across a bar of the grate, a visible defect. Out.
+- 2x-AoMR-mosr: worm-like noise patterns on grain. Out.
+
+Both candidates have permissive licenses (CC0, Apache-2.0), so a recipe can name and fetch
+them freely. With the memory budget above, a likely split is 2x SwinIR for most world
+textures and 4x PBRify for the classes seen up close (skins, weapons, detail), to confirm in
+the game.
+
+### In-game test 1 (2026-11-01): Vortex2 through the D3D10 renderer
+
+Loading path chosen: [Kentie's Direct3D 10 renderer](https://kentie.net/article/d3d10drv/)
+v29 (`Unreal_226_Gold` build, zip SHA-256 `1bd1973a477d`), which replaces any game texture
+with a `.dds` file and leaves the packages untouched.
+
+- Layout: `Textures\<Package>\<Group>\<Name>.dds`, plus an optional `<Name>.dds.flags` text
+  file of extra `PolyFlags` (e.g. `0x00001000` for alpha blending), and `.detail`, `.bump`,
+  `.height` extra layers. Source: Kentie's example archive `unatco.zip`
+  ([artist info](https://kentie.net/article/d3d10drv/page2.htm)).
+- Kentie states the renderer does not work with 227, so this path keeps the 226 base.
+- Needs `d3dx10_43.dll` (DirectX June 2010) and the VC++ 2010 x86 runtime (read from the
+  DLL's imports). Both were already present on the owner's PC.
+- The renderer's source (texture converter) confirms the mask rule: on a masked texture,
+  palette index 0 is transparent. The override DDS carries it as alpha 0.
+- 227k has no import commandlet; repacking would mean `ucc make` with `#exec TEXTURE IMPORT`
+  and playing on 227. Not tried.
+
+Batch: the textures `Vortex2.unr` (first level) imports, read from its import table: 112,
+mostly `PlayrShp`. Animation chains added, procedural textures left out: 121 textures,
+4x-PBRify-UpscalerV4, uncompressed BGRA DDS with a full mip chain (271 MB). One texture the
+map names (`UnrealI.Icons.Crosshair6`) is not in the 226 inventory. Textures of actors
+(weapons, creatures, decorations) are not in a map's imports and were not covered.
+
+Captures, without the owner at the keyboard: the game is started windowed (1600x900) on
+`Vortex2.unr`, keys are posted to its window (`PlayersOnly` to freeze the world, `Shot` on
+F9, two bound turn keys), then it is closed. Three copies, same config: stock D3D10, D3D10
+with the upscaled batch, and a control with the original pixels written as DDS.
+
+- The upscaled textures load and render, with no missing or black surfaces.
+- Light pulses: two runs of the same stock copy differ by up to 11% in mean brightness,
+  depending on when the world is frozen. The control matched the stock run it was compared
+  with (ratio 1.000), so the override path itself does not change colours. Before/after
+  pairs must be chosen with matching light: the stock run used is within 0.7 to 4%.
+- Result: sharper floor plates, hazard stripes and light panels at 1600x900, same colours
+  and mood. The gain is smallest on dark walls.
+
+Next: block-compressed DDS (DXT1/DXT5) instead of uncompressed, the 2x SwinIR / 4x PBRify
+split, actor textures, and a capture method that is not affected by pulsing lights.
+
+### In-game test 2 (2026-11-03): every texture, block-compressed
+
+Compression: `texconv` from [DirectXTex](https://github.com/microsoft/DirectXTex) (release
+may2026, SHA-256 `dcfdec10244e`). BC1 for opaque textures, BC3 for masked ones (alpha 0 on
+palette index 0, alpha mipmaps thresholded at 0.5 so alpha testing keeps its shape). Kentie
+recommends DXT1/DXT5 and does not support BC7.
+
+- On the Vortex2 batch: 271 MB uncompressed, 20 MB compressed, mean PSNR 38.6 dB against the
+  uncompressed textures, and no visible difference in game.
+
+Full run, 4x-PBRify-UpscalerV4, every texture in the inventory:
+
+| Inventoried | Written | BC1 | BC3 | Procedural | Font | Under 8 px |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 4430 | 3962 | 3514 | 448 | 226 | 207 | 35 |
+
+- 1.1 GB on disk. Every file has a valid header and a full mipmap chain. The largest is
+  4096x2048 (`Skaarj.Deco.Aa_clw`).
+- Engine's 38 textures are not in it (not exported, see the inventory).
+- Speed depends on whether the GPU is shared: about 13 s per 256x256 texture when other
+  applications were using it; the last 1772 textures took 1.4 h overnight.
+
+Captures: four maps with different settings (NyLeve, Dig, Ruins, DasaPass), stock D3D10
+against D3D10 with all overrides. The script takes five shots from the spawn view per run,
+unfreezing the world briefly between them, and the pair with the closest mean brightness is
+kept: every pair is within 0.2%.
+
+- Memory: 124 to 144 MB private and about 700 MB peak virtual with all overrides, the same as
+  stock. The overrides are held by the GPU, not in the game's address space.
+- Rock, wood and stone: much sharper. Ruins' cracks and floor grain become readable,
+  DasaPass's door shows its wood grain, the stone blocks get edges. Colours and mood stay.
+  Ruins' cracks also gain contrast (darker lines than the blurred original); to watch.
+- HUD icons are fine: drawn small on screen, the 4x texture only looks a little smoother.
+- Defect: glow sprites. In Dig, the lamp coronas go from a soft halo to a hard-edged disc
+  with thin, sharp rays. The textures are `GenFX.LensFlar.Flarel~6` and `ShaneDay.FLARE10`:
+  the model sharpens soft gradients that were meant to be soft.
+
+### Glow sprites (2026-11-04): kept as original
+
+Glows, smoke and other soft effects are drawn additively on black. The upscaler sharpens
+their gradients into edges, so they keep the original texture (no override). How they were
+picked:
+
+1. Candidates: not masked, not procedural, border at least 98% near-black (max channel under
+   12) and at least 35% near-black overall. 209 textures: flares, smoke, explosions, sparks,
+   moons and nebulae, but also screens, credits, logos and panels. A name rule is worse
+   (`beam` is also a pillar, `I_Flare` an icon).
+2. Softness: mean absolute Laplacian of the luminance over lit pixels, divided by their mean
+   luminance; and "ink", the share of lit pixels next to a step of more than 64 levels.
+   Rule: glow when softness < 0.36 and ink < 0.13. Credits and most screens and logos
+   fall outside it (text gives them ink above 0.1); the exceptions are caught in step 3.
+3. Checked by eye on a sheet of every candidate, original next to upscaled. 28 changed by
+   hand. Six patterned or solid textures moved out (SkyCity's three lanterns,
+   `GenIn.Deco.Ship`, `Langs.ocrana`, `UPak.Skins.Jpyramid1`). Twenty-two soft effects moved
+   in: the eight electric arcs, seven explosion flames, two smoke frames, `Effects.T_PawnT`,
+   two nebulae and two blood puffs. The rule missed them, mostly on softness.
+4. Animations: every frame of a chain (`AnimNext`) takes the same class, otherwise a flame
+   would alternate between original and upscaled frames. This adds 19 frames that were not
+   candidates.
+
+Result: 118 textures kept as original, 3844 overrides left. Moons, star fields, credits,
+screens and logos stay upscaled. In Dig the lamp coronas match the original again, and the
+rock keeps its gain. The rule is tuned on this game: other games need the same check by eye.
+
+## Observations
+
+- `detect_engine` read the headers of only 20 packages out of 302 (the per-signal cap,
+  `maxMagicFilesPerSignal`). A separate full read found the tag in all of them.
+- The disc's `System` folder holds GameSpy's installer and `Setup.exe` next to the game,
+  which `detect_engine` used to rank first (fixed in #5).
+
+## Deductions
+
+- Patch 226b is the version Kentie's D3D10 renderer supports, so the stock disc is a usable
+  base for a display recipe without OldUnreal's 227. Whether 227 is the better base is a
+  research question.
+- Memory budget: 112 million base pixels become 448 million at 2x and 1.8 billion at 4x.
+  Compressed (DXT1 0.5 byte per pixel, DXT5 1 byte) plus a third for mipmaps, that is roughly
+  0.3 to 0.6 GB at 2x and 1.2 to 2.4 GB at 4x, if every texture were loaded at once. This
+  would not fit a 32-bit exe without LAA if the textures lived in the game's memory, but with
+  the D3D10 overrides they live on the GPU (In-game test 2: game memory unchanged), so a
+  uniform 4x works on this path.
+- Code packages hold a quarter of the textures (1111 of 4430): a pass limited to
+  `Textures/` would miss the weapons, pickups and menus.
+
+## Guesses
+
+From memory of UE1, to confirm:
+
+- `PolyFlags` bits: 0x2 masked, 0x4 translucent, 0x40 modulated. Only the masked bit is
+  set on any texture here; translucency is likely set per surface or actor instead.
+
+## Capture plan
+
+Scripted runs work (see In-game tests 1 and 2): start the map windowed, freeze with
+`PlayersOnly`, take several `Shot`s from the spawn view with short unfrozen gaps between them,
+and keep the before/after pair with the closest mean brightness. Maps so far: Vortex2,
+NyLeve, Dig, Ruins, DasaPass. To do: viewpoints beyond the spawn point, outdoor views, and a
+view with creatures and weapon effects.
+
+## Log
+
+- 2026-10-31: ISO downloaded and verified, game folders extracted, triage with
+  `detect_engine` and `read_pe_info`; exe ranking fixed and `unreal-1` signature verified (#5).
+- 2026-11-01: identity record written. 226 UCC cannot export; 227k downloaded and installed on
+  a test copy; 4430 textures exported from the 226 packages and inventoried. First upscale
+  test: Lanczos, Real-ESRGAN x2 and x4, 4x-UltraSharpV2 on 12 textures. Second test: mask fill,
+  five more models; 4x-PBRify-UpscalerV4 and 2x SwinIR-M kept. In-game test: Vortex2 batch
+  loaded through Kentie's D3D10 overrides, scripted captures with a control copy.
+- 2026-11-03: BC1/BC3 compression; every eligible texture (3962) upscaled and compressed;
+  in-game before/after on four more maps; glow sprites found to be harmed by the model.
+- 2026-11-04: glow sprites classified (118 kept as original), Dig captured again.
